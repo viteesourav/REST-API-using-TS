@@ -12,3 +12,10 @@ Notes:
 ** Creating a Authentication Route and Controller.
     -- Route to Handle Register A user.
     -- Route to Handle Login A user. [On login Add SessionToken and Put in DB and Inside Cookie]
+** Creating a Middleware with lodash.
+** Creating a User Route and Controller.
+    -- Fetch all User Routes.
+    -- Routes to Delete a user.
+    -- Routes to Update User Details. [will just update username i.e Patch Update]
+
+** DONE **

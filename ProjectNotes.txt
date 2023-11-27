@@ -1,0 +1,14 @@
+*** Project Notes ***
+
+Goal: Build a Server For User API using TypeScript, Node, Express and Mongo.
+
+Notes:
+
+** Project Setup For TypeScript.
+** CommonJs vs ECMA Js for js Files [What is the difference ?].
+** Installing the needed imports.
+** Creating UserSchema and UserActions
+** Handle Password Hashing.
+** Creating a Authentication Route and Controller.
+    -- Route to Handle Register A user.
+    -- Route to Handle Login A user. [On login Add SessionToken and Put in DB and Inside Cookie]

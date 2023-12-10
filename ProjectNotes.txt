@@ -5,15 +5,118 @@ Goal: Build a Server For User API using TypeScript, Node, Express and Mongo.
 Notes:
 
 ** Project Setup For TypeScript.
+    -- use npm init to craete a new Node project workspace.
+    -- For TypeScript support, install typescript and ts-node package.
+    NOTE: When you install typscript, it installs tsc [typscript compiler]
+    -- Need to configure 2 configuration files.
+       1) nodemon config [nodemon.json]
+          -- This make sure look for any changes and restart the server automatically.
+          -- Manually create a json file, specify the properties to watch the files for changes.
+          -- Add nodmon in the package.json file under start script.
+          -- Now everytime, you do npm start -> this will start the nodemon -> which keeps the server open.
+       2) typscript config [tsconfig.json]
+          -- You can either create a json file from scratch or use tsc --init to have a base tsc configuration file.
+          -- Once you have the tsconfig file, Add the properties.
+
 ** CommonJs vs ECMA Js for js Files [What is the difference ?].
+    -- In the project.json file, we have one key called type which can be specifed as module[ESM] or commonjs[by-default].
+    -- In JS 2 types of Module System we have.
+       1) Common JS [CJS]
+          -- It is most commonly used and is compatible with node JS.
+          -- This is Synchronous i.e it will block the main thread and might cause delay if module to be loaded is large.
+          -- CommonJS modules are defined using require() function. this loads the specifed modules in the current module.
+          -- For export, You can use module.exports Object to export the module.
+          -- You dont have any support for named or default export or browser support.  
+       2) ESM [ECMA Script Module] 
+          -- It is newer and more standardized system.
+          -- This is Asynchronous.
+          -- Here you use import and export keyword to import certain modules in the current module.
+          -- For export, You can either do named export directly from the module. or export the module content by default.
+          -- You have support for named or default export or browser support.
+    --  Thus,
+        Both ESM and CJS are different way of organising code in a node project. ESM is relatively new and provides more flexibility for import and export modules as
+        named, default or re-exports. Its Asynchronous so it wont block the main thread while importing large moduels.
+        Whereas, CJS are older and more widely used. It uses require() to import a module and module.exports Object to export modules.
+    
+    NOTE: [** IMP **]
+    ES features [New Standard to write clean and efficent JS code]
+        -- let and const keyword.
+        -- Arrow function
+        -- spread and rest Operator
+        -- Classes, promises, Symbol
+        -- Arrays and String methods like String.startWith(), Arrays.from(), .find()
+        -- Support for named and default export of modules and import keyword to import the modules.
+
 ** Installing the needed imports.
+    -- In index.ts [Main File], we need express, http, body-parser, cookie-parser, compression, cors, moongoose.
+    -- express and http to create a server and listen.
+    -- bodyParser is to parse the payload data to json. [we have options that parse the incoming form data to json]
+    -- cors is a security need that prevents cross-site scripting. It allows only a specific url to access the websites resources.
+    -- mongoose to help with cration of Schema layout and connect to Mongo DB.
+    -- Router -> from exporess.Router to crates Routes For our User Model.
+NOTE:
+    -- As we are using typescript, Dont forget to import @types/package-name for all the above imports.
+
 ** Creating UserSchema and UserActions
-** Handle Password Hashing.
+    -- First, In the index.ts, connect the Mongo DB url using mongoose.connect.
+    -- Create a model file, 
+        -- define the mongo Schema, using new mongoose.schema.
+        -- each key must have a type[data-type], required[to check if its required field], select[boolean that specify if we need to fetch this data by-default]
+        -- Create a user Model using mongoose.model() -> This creates the schema in the mongo db.
+        -- Now, define all the operations like to get, create or update using the mongo operations on the model created like findById, findOne, FineOneAndUpdate etc.
+    -- Thus,
+        You have successfully created the Mongo Schema and created a Model and also defined operations on that model.
+
+** Handle Password Hashing. [Password generation Logic]
+    -- This is a utilty Requirement. [This helps us parse and authenticate password that is stored in db]
+    -- we use a module called crypto [It is available in node by-default, no import needed]
+    -- steps:
+        1) Generate a random 126 bytes base64 string using crypto.randomBytes()
+        2) A authenticate function that uses crypto.createHmac() using SHA-256 encryption with (password+salt) that is mixed with secretKey.
+    -- This Creates a strong password for us to store.
+NOTE:
+    This Passowrd creation logic can be used at different places.
+        You need: 1) crypto package, 2) secret and salt Strings ans unhashed password. 4)Rest are crypto functions used like randomBytes, createHmac
+    -- This works because This method of generating password is consistent i.e it always gives the same result for the same input.
+
 ** Creating a Authentication Route and Controller.
+    -- Creating a Route Setup.
+        - In a Route Folder, create index.ts [All Routes added at one place]
+        - export default the router object with all the defined Routes.
+        -- In the index.ts for main fine, add the exported Route object to express.
     -- Route to Handle Register A user.
+        - Create a seperate file for handiling authentication related Routes. -> call the controller.
     -- Route to Handle Login A user. [On login Add SessionToken and Put in DB and Inside Cookie]
+        - Create a seperate file for handiling login related Routes. -> call the controller.
+
 ** Creating a Middleware with lodash.
+    -- The middleware hnadles 2 checks:
+        1) If the user is authenticated and is trying to access the Routes.
+        2) If the user is the owner of the Opration that he is trying to Perform.
+    The Opertions we peform on user's Register or Login:
+    -- As we Register A new user,
+        - You do the basic Validation of the fields.
+        - Then you check if the emailId is already registerd in DB.
+        - If Above condition satisfy, Create a new USer and store the info.
+    -- As we Login a User,
+        - Do a basic Validation of the field.
+        - Based on the emailID, fetch the details of the users [NOTE: use .select(fieldnames) to fetch the info that is defined select=false in the schema]
+        - Now take the input pass, hash it and compare it with the pass stored in DB.
+        - If matched, User authenticated.
+        - Create a session key, Store it in the user data in DB.
+        - Store the session key in the cookie.
+        - This helps to identify if the user has an active session or not !!
+
 ** Creating a User Route and Controller.
+    -- Middleware that run's before any calls
+        - Before we make any calls to the interact with the user Schema,
+        - In User Route, Add the middleware to check..
+          1) is the current user loggedin ?
+            -- It fetchs the session token from the cookie.
+            -- Compare it with the one stored in user Schema in the DB.
+            -- If it matches, User is logged in.
+          2) is the current user is owner of the operation it is performing [*** Check Authorization ***]
+            -- Check if the user with the current session key id is same as the user's info the action is performed.
     -- Fetch all User Routes.
     -- Routes to Delete a user.
     -- Routes to Update User Details. [will just update username i.e Patch Update]
